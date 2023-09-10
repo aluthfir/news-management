@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Resources\NewsResource;
 use App\Models\News;
+use App\Http\Requests\NewsRequest;
+use App\Http\Resources\NewsResource;
 
 class NewsController extends Controller
 {
@@ -15,15 +16,8 @@ class NewsController extends Controller
         return NewsResource::collection($news);
     }
 
-    public function store(Request $request)
+    public function store(NewsRequest $request, News $news)
     {
-        $this->validate($request, [
-            'title' => 'required|max:255',
-            'content' => 'required',
-            'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validate image
-        ]);
-
-        $news = new News;
         $news->title = $request->title;
         $news->content = $request->content;
 
@@ -37,5 +31,28 @@ class NewsController extends Controller
         $news->save();
 
         return new NewsResource($news);
+    }
+
+    public function update(NewsRequest $request, News $news)
+    {   
+        $news->title = $request->title;
+        $news->content = $request->content;
+
+        if ($request->hasFile('image')) {
+            $imageName = time() . '.' . $request->image->getClientOriginalExtension();
+            $request->image->storeAs('public/news', $imageName);
+            $news->image = $imageName;
+        }
+
+        $news->user_id = $request->user()->id;  // Associate with the logged-in user
+        $news->save();
+
+        return new NewsResource($news);
+    }
+
+    public function destroy(News $news)
+    {
+        $news->delete();
+        return response()->json(['message' => 'News deleted successfully'], 200);
     }
 }

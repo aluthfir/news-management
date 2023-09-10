@@ -33,7 +33,7 @@ class NewsObserver
     /**
      * Handle the News "deleted" event.
      */
-    public function deleted(News $news)
+    public function deleting(News $news)
     {
         NewsLog::create([
             'news_id' => $news->id,

@@ -22,7 +22,12 @@ Route::middleware(['api'])->prefix('v1')->group(function() {
     Route::post('/login', [LoginController::class, 'login']);
     Route::get('/news', [NewsController::class, 'index']); //I put this API unprotected because usually people don't need to login to view the news and comments
     
-    Route::middleware(['auth:api', 'checkrole:superadmin,admin'])->post('/news', [NewsController::class, 'store']); //checking if the role is superadmin/admin
+    //checking if the role is superadmin/admin
+    Route::middleware(['auth:api', 'checkrole:superadmin,admin'])->group(function() {
+        Route::post('/news', [NewsController::class, 'store']);
+        Route::put('/news/{news}', [NewsController::class, 'update']);
+        Route::delete('/news/{news}', [NewsController::class, 'destroy']);
+    });
 
     Route::middleware(['auth:api'])->group(function() {
         Route::post('/logout', [LoginController::class, 'logout']);
